@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://exposeid.vercel.app/sitemap.xml

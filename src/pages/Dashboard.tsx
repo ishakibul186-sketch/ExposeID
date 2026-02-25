@@ -138,7 +138,7 @@ export default function Dashboard() {
     if (!activeCard.title.trim()) errors.push('Professional Title is required.');
     if (!activeCard.bio.trim()) errors.push('Short Bio is required.');
     if (!activeCard.theme) errors.push('A theme must be selected.');
-    const hasSocialLink = Object.values(activeCard.socialLinks || {}).some(link => link && link.trim() !== '');
+    const hasSocialLink = Object.values(activeCard.socialLinks || {}).some(link => typeof link === 'string' && link.trim() !== '');
     if (!hasSocialLink) errors.push('At least one social media link is required.');
 
     if (errors.length > 0) {
@@ -179,8 +179,11 @@ export default function Dashboard() {
   };
 
   const createNewCard = async () => {
-    if (!user || !account) return;
-    const cardCount = Object.keys(account.cards).length;
+    if (!user) return;
+    
+    const currentCards = account?.cards || {};
+    const cardCount = Object.keys(currentCards).length;
+    
     if (cardCount >= 5) {
       setMessage('Card limit (5) reached.');
       return;
@@ -205,19 +208,29 @@ export default function Dashboard() {
       createdAt: Date.now()
     };
 
-    const updatedAccount = {
+    const updatedAccount: UserAccount = account ? {
       ...account,
       cards: { ...account.cards, [cardId]: newCard },
       activeCardId: cardId
+    } : {
+      uid: user.uid,
+      email: user.email || '',
+      cards: { [cardId]: newCard },
+      activeCardId: cardId
     };
 
-    await set(ref(rtdb, `accounts/${user.uid}`), updatedAccount);
-    await set(ref(rtdb, `usernames/${defaultUsername.toLowerCase()}`), { uid: user.uid, cardId });
-    
-    setAccount(updatedAccount);
-    setActiveCard(newCard);
-    setMessage('New card created!');
-    setTimeout(() => setMessage(''), 3000);
+    try {
+      await set(ref(rtdb, `accounts/${user.uid}`), updatedAccount);
+      await set(ref(rtdb, `usernames/${defaultUsername.toLowerCase()}`), { uid: user.uid, cardId });
+      
+      setAccount(updatedAccount);
+      setActiveCard(newCard);
+      setMessage('New card created!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      console.error("Error creating card:", err);
+      setMessage('Failed to create card.');
+    }
   };
 
   const switchCard = (cardId: string) => {
@@ -348,8 +361,8 @@ export default function Dashboard() {
 
     const checks = {
       basicInfo: activeCard.displayName?.trim() && activeCard.username?.trim() && activeCard.title?.trim() && activeCard.bio?.trim() && !!activeCard.photoURL,
-      contactInfo: Object.values(activeCard.contact || {}).some(val => val && val.trim() !== ''),
-      socialMedia: Object.values(activeCard.socialLinks || {}).some(val => val && val.trim() !== ''),
+      contactInfo: Object.values(activeCard.contact || {}).some(val => typeof val === 'string' && val.trim() !== ''),
+      socialMedia: Object.values(activeCard.socialLinks || {}).some(val => typeof val === 'string' && val.trim() !== ''),
       businessInfo: !!activeCard.business?.companyName?.trim(),
       portfolio: (activeCard.business?.portfolio?.length || 0) > 0,
       links: (activeCard.links?.length || 0) > 0,
@@ -432,7 +445,7 @@ export default function Dashboard() {
 
       {view === 'list' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {account && Object.values(account.cards).map(card => (
+          {account && (Object.values(account.cards) as UserCard[]).map(card => (
             <div key={card.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col group">
               <div className="flex-1 mb-4">
                 <div className="w-full aspect-video bg-zinc-800 rounded-lg mb-3 overflow-hidden">

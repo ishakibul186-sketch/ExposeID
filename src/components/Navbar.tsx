@@ -17,8 +17,8 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
-            <img src="/assets/ExposeID.png" alt="ExposeID Logo" className="w-full h-full object-cover" />
+          <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
+            <Layout className="w-5 h-5 text-zinc-950" />
           </div>
           <span className="font-bold text-xl tracking-tight">ExposeID</span>
         </Link>

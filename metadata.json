@@ -1,4 +1,5 @@
 {
-  "name": "LinkFlow",
-  "description": "Link FLow"
+  "name": "ExposeID",
+  "description": "Link FLow",
+  "requestFramePermissions": []
 }

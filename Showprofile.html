@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Dynamic SEO Placeholders -->
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}">
+    <meta name="keywords" content="{{KEYWORDS}}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="{{URL}}">
+    <meta property="og:title" content="{{TITLE}}">
+    <meta property="og:description" content="{{DESCRIPTION}}">
+    <meta property="og:image" content="{{IMAGE}}">
+    <meta property="profile:username" content="{{USERNAME}}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{URL}}">
+    <meta property="twitter:title" content="{{TITLE}}">
+    <meta property="twitter:description" content="{{DESCRIPTION}}">
+    <meta property="twitter:image" content="{{IMAGE}}">
+
+    <!-- Schema.org Markup -->
+    <script type="application/ld+json">
+    {{SCHEMA}}
+    </script>
+
+    <!-- Basic Info for Crawlers -->
+    <div style="display:none;">
+        <h1>{{NAME}}</h1>
+        <p>{{BIO}}</p>
+        <div id="links">
+            {{LINKS}}
+        </div>
+    </div>
+
+    <!-- Import PublicProfile Logic (React App) -->
+    <script type="module" src="/src/main.tsx"></script>
+</head>
+<body class="bg-zinc-950">
+    <div id="root"></div>
+</body>
+</html>
