@@ -90,9 +90,9 @@ export default function SearchResult() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {results.map((profile) => (
-              <Link 
+              <a 
                 key={`${profile.uid}-${profile.id}`}
-                to={`/${profile.username}`}
+                href={`/${profile.username}`}
                 className="group bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all hover:shadow-2xl hover:shadow-emerald-500/5"
               >
                 <div className="flex items-start gap-4 mb-4">
@@ -140,7 +140,7 @@ export default function SearchResult() {
                     View Card <ChevronRight className="w-4 h-4" />
                   </div>
                 </div>
-              </Link>
+              </a>
             ))}
 
             {results.length === 0 && (
