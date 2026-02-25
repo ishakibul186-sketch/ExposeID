@@ -262,8 +262,8 @@ export default function CardView({ profile, onLinkClick }: CardViewProps) {
 
           {/* Footer */}
           <div className="pt-8 border-t border-zinc-800/50">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-              <Smartphone className="w-3 h-3" /> Created with LinkFlow
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+              <img src="/assets/logo.png" alt="ExposeID" className="w-4 h-4 object-contain" /> Created with ExposeID
             </div>
           </div>
         </div>

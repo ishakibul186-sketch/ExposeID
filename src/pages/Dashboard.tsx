@@ -1045,8 +1045,8 @@ export default function Dashboard() {
                 </div>
 
                 <div className="mt-12 text-center">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-800/50 text-[10px] font-bold uppercase tracking-widest opacity-50">
-                    <Smartphone className="w-3 h-3" /> LinkFlow
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-800/50 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                    <img src="/assets/logo.png" alt="ExposeID" className="w-4 h-4 object-contain" /> ExposeID
                   </div>
                 </div>
               </div>

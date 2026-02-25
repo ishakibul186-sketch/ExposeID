@@ -157,17 +157,15 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-12 border-t border-zinc-800 mt-auto">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-emerald-500 rounded flex items-center justify-center">
-              <Smartphone className="w-4 h-4 text-zinc-950" />
-            </div>
-            <span className="font-bold">LinkFlow</span>
+          <div className="flex items-center gap-2.5">
+            <img src="/assets/logo.png" alt="ExposeID" className="w-8 h-8 object-contain" />
+            <span className="font-bold text-lg tracking-tight">ExposeID</span>
           </div>
-          <p className="text-zinc-500 text-sm">© 2026 LinkFlow. All rights reserved.</p>
-          <div className="flex gap-6 text-zinc-400 text-sm">
-            <a href="#" className="hover:text-white">Privacy</a>
-            <a href="#" className="hover:text-white">Terms</a>
-            <a href="#" className="hover:text-white">Contact</a>
+          <p className="text-zinc-500 text-sm">© 2026 ExposeID. All rights reserved.</p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-zinc-400 text-sm">
+            <a href="/docs" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Docs</a>
+            <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Terms of Service</a>
           </div>
         </div>
       </footer>

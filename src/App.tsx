@@ -29,7 +29,7 @@ const AuthContext = createContext<AuthContextType>({ user: null, loading: true }
 
 export const useAuth = () => useContext(AuthContext);
 
-// LinkFlow - Digital Business Card Application
+// ExposeID - Digital Business Card Application
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ export default function App() {
               path="/analytics" 
               element={user ? <><Navbar /><Analytics /></> : <Navigate to="/login" />} 
             />
-            <Route path="/searchresult" element={<><Navbar /><SearchResult /></>} />
+            <Route path="/searchresult" element={<SearchResult />} />
             <Route path="/:username" element={<PublicProfile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

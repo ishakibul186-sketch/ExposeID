@@ -16,11 +16,15 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
-            <Layout className="w-5 h-5 text-zinc-950" />
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:border-emerald-500/50 transition-all shadow-lg overflow-hidden">
+            <img 
+              src="/assets/logo.png" 
+              alt="ExposeID" 
+              className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300" 
+            />
           </div>
-          <span className="font-bold text-xl tracking-tight">ExposeID</span>
+          <span className="font-bold text-xl tracking-tighter bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">ExposeID</span>
         </Link>
 
         <div className="flex items-center gap-4">

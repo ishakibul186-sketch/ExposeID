@@ -55,9 +55,11 @@ export default function SearchResult() {
     <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/" className="p-2 hover:bg-zinc-900 rounded-full transition-colors">
-            <ArrowLeft className="w-6 h-6" />
+        <div className="container mx-auto px-4 py-3 flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:border-emerald-500/50 transition-all">
+              <img src="/assets/logo.png" alt="ExposeID" className="w-7 h-7 object-contain" />
+            </div>
           </Link>
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />

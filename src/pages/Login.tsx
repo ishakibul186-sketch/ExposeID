@@ -140,12 +140,10 @@ export default function Login() {
         className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl"
       >
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Smartphone className="w-6 h-6 text-zinc-950" />
-          </div>
+          <img src="/assets/logo.png" alt="ExposeID" className="w-12 h-12 mx-auto mb-4 object-contain" />
           <h2 className="text-2xl font-bold">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
           <p className="text-zinc-400 mt-2">
-            {isLogin ? 'Sign in to manage your digital card' : 'Join LinkFlow and build your presence'}
+            {isLogin ? 'Sign in to manage your digital card' : 'Join ExposeID and build your presence'}
           </p>
         </div>
 

@@ -19,6 +19,11 @@ async function startServer() {
   // Dynamic SEO for Public Profiles
   app.get("/:username", async (req, res, next) => {
     const { username } = req.params;
+    const staticPages = ["docs", "privacy-policy", "terms"];
+    if (staticPages.includes(username.toLowerCase())) {
+      return res.sendFile(path.resolve(__dirname, `${username.toLowerCase()}.html`));
+    }
+
     const reservedRoutes = ["dashboard", "analytics", "login", "searchresult", "api", "assets", "src", "node_modules", "@vite", "@id", "favicon.ico"];
     
     if (reservedRoutes.includes(username.toLowerCase()) || username.includes(".")) {
@@ -64,7 +69,7 @@ async function startServer() {
   });
 
   function renderProfile(profile: any, res: any, req: any) {
-    const templatePath = path.resolve(__dirname, "Showprofile.html");
+    const templatePath = path.resolve(__dirname, "ShowProfile.html");
     let html = fs.readFileSync(templatePath, "utf-8");
 
     const seoTitle = `${profile.displayName} (@${profile.username}) - ExposeID`;

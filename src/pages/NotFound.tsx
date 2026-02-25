@@ -41,7 +41,7 @@ export default function NotFound() {
       </motion.div>
 
       <div className="mt-20 text-zinc-600 text-xs font-bold uppercase tracking-widest">
-        LinkFlow Digital Cards
+        ExposeID Digital Cards
       </div>
     </div>
   );
