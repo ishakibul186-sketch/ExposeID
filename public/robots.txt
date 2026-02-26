@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://exposeid.vercel.app/sitemap.xml
+Sitemap: https://exposeid.vercel.app/sitemap-userprofile.xml

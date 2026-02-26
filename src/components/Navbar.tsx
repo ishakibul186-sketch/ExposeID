@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { auth } from '../firebase';
-import { LogOut, User as UserIcon, BarChart3, Layout } from 'lucide-react';
+import { LogOut, User as UserIcon, BarChart3, Layout, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function Navbar() {
@@ -43,6 +43,13 @@ export default function Navbar() {
               >
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">Analytics</span>
+              </Link>
+              <Link 
+                to="/settings" 
+                className="text-sm font-medium text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Settings</span>
               </Link>
               <button 
                 onClick={handleLogout}
