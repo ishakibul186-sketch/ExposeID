@@ -26,19 +26,7 @@ const GoToTop = () => {
     };
   }, []);
 
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {isVisible && (
-        <button
-          onClick={scrollToTop}
-          className="bg-zinc-800 text-white p-3 rounded-full shadow-lg hover:bg-zinc-700 transition-colors duration-300"
-          aria-label="Go to top"
-        >
-          <ArrowUp size={24} />
-        </button>
-      )}
-    </div>
-  );
+  return null;
 };
 
 export default GoToTop;

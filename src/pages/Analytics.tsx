@@ -18,6 +18,7 @@ import {
 import { Eye, MousePointer2, TrendingUp, Loader2, Calendar, RefreshCw, LayoutDashboard, ChevronDown, ArrowUpRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
+import VisitorLocationMap from '../components/VisitorLocationMap';
 
 export default function Analytics() {
   const { user } = useAuth();
@@ -147,24 +148,37 @@ export default function Analytics() {
     </div>
   );
 
-  const totalClicks = activeCard.links.reduce((acc, curr) => acc + curr.clicks, 0);
+  const totalClicks = Object.values(activeCard.clickHistory || {}).reduce((acc, curr) => acc + curr, 0);
   const ctr = activeCard.views > 0 ? ((totalClicks / activeCard.views) * 100).toFixed(1) : '0.0';
 
-  // Mock historical data for visual purposes
-  const chartData = [
-    { name: 'Mon', views: Math.floor(activeCard.views * 0.1), clicks: Math.floor(totalClicks * 0.1) },
-    { name: 'Tue', views: Math.floor(activeCard.views * 0.15), clicks: Math.floor(totalClicks * 0.12) },
-    { name: 'Wed', views: Math.floor(activeCard.views * 0.2), clicks: Math.floor(totalClicks * 0.18) },
-    { name: 'Thu', views: Math.floor(activeCard.views * 0.12), clicks: Math.floor(totalClicks * 0.1) },
-    { name: 'Fri', views: Math.floor(activeCard.views * 0.25), clicks: Math.floor(totalClicks * 0.22) },
-    { name: 'Sat', views: Math.floor(activeCard.views * 0.1), clicks: Math.floor(totalClicks * 0.15) },
-    { name: 'Sun', views: Math.floor(activeCard.views * 0.08), clicks: Math.floor(totalClicks * 0.13) },
-  ];
+  const [chartData, setChartData] = useState<{name: string; views: number; clicks: number;}[]>([]);
 
-  const linkData = activeCard.links.map(l => ({
-    name: l.title,
-    value: l.clicks
-  })).filter(l => l.value > 0);
+  useEffect(() => {
+    const generateChartData = () => {
+      if (!activeCard) return;
+      const data = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        data.push({ name: day, views: 0, clicks: 0 });
+      }
+      setChartData(data);
+    };
+    generateChartData();
+  }, [activeCard]);
+
+  const linkData = Object.entries(activeCard.clickHistory || {}).map(([key, value]) => {
+    let name = key;
+    if (activeCard.links.find(l => l.id === key)) {
+      name = activeCard.links.find(l => l.id === key)?.title || key;
+    } else if (key === 'mobile' || key === 'whatsapp' || key === 'email' || key === 'website') {
+      name = key.charAt(0).toUpperCase() + key.slice(1);
+    } else {
+      name = key.charAt(0).toUpperCase() + key.slice(1);
+    }
+    return { name, value };
+  }).filter(l => l.value > 0);
 
   const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 
@@ -354,6 +368,7 @@ export default function Analytics() {
             </div>
           )}
         </div>
+        <VisitorLocationMap />
       </div>
     </div>
   );

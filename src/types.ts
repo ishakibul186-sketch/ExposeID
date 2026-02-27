@@ -59,6 +59,7 @@ export interface UserCard {
   views: number;
   createdAt: number;
   isTopRanked?: boolean;
+  clickHistory?: Record<string, number>;
 }
 
 export interface UserAccount {

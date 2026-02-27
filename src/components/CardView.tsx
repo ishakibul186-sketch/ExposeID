@@ -27,7 +27,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface CardViewProps {
   profile: UserCard;
-  onLinkClick?: (linkId: string, url: string) => void;
+  onLinkClick?: (id: string, type: string, url: string) => void;
 }
 
 export default function CardView({ profile, onLinkClick }: CardViewProps) {
@@ -55,7 +55,7 @@ export default function CardView({ profile, onLinkClick }: CardViewProps) {
       theme === 'minimal' ? "bg-zinc-50" : "bg-zinc-950"
     )}>
       {/* Navigation Buttons */}
-      <div className="fixed top-4 left-4 right-4 z-50 flex justify-between pointer-events-none">
+      <div className="fixed top-4 left-4 right-4 z-50 flex justify-between pointer-events-none md:hidden">
         <button 
           onClick={() => window.history.back()}
           className="p-3 bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-2xl text-white hover:bg-zinc-800 transition-all pointer-events-auto shadow-xl"
@@ -114,22 +114,22 @@ export default function CardView({ profile, onLinkClick }: CardViewProps) {
           {/* Contact Quick Actions */}
           <div className="flex flex-wrap justify-center gap-3 mb-10">
             {profile.contact?.mobile && (
-              <a href={`tel:${profile.contact.mobile}`} className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
+              <a onClick={() => onLinkClick?.('mobile', 'contact', `tel:${profile.contact.mobile}`)} href={`tel:${profile.contact.mobile}`} className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
                 <Smartphone className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
               </a>
             )}
             {profile.contact?.whatsapp && (
-              <a href={`https://wa.me/${profile.contact.whatsapp}`} target="_blank" className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
+              <a onClick={() => onLinkClick?.('whatsapp', 'contact', `https://wa.me/${profile.contact.whatsapp}`)} href={`https://wa.me/${profile.contact.whatsapp}`} target="_blank" className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
                 <MessageCircle className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
               </a>
             )}
             {profile.contact?.email && (
-              <a href={`mailto:${profile.contact.email}`} className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
+              <a onClick={() => onLinkClick?.('email', 'contact', `mailto:${profile.contact.email}`)} href={`mailto:${profile.contact.email}`} className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
                 <Mail className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
               </a>
             )}
             {profile.contact?.website && (
-              <a href={profile.contact.website} target="_blank" className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
+              <a onClick={() => onLinkClick?.('website', 'contact', profile.contact.website || '')} href={profile.contact.website} target="_blank" className="p-3 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all group">
                 <Globe className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
               </a>
             )}
@@ -281,7 +281,7 @@ export default function CardView({ profile, onLinkClick }: CardViewProps) {
             {profile.links.filter(l => l.active).map(link => (
               <button 
                 key={link.id}
-                onClick={() => onLinkClick?.(link.id, link.url)}
+                onClick={() => onLinkClick?.(link.id, 'link', link.url)}
                 className={cn(
                   "w-full py-4 px-6 rounded-2xl text-left font-bold flex items-center justify-between group transition-all",
                   theme === 'neon' && "bg-transparent border border-emerald-500 text-emerald-500 hover:bg-emerald-500/10",
@@ -303,7 +303,7 @@ export default function CardView({ profile, onLinkClick }: CardViewProps) {
               if (!url) return null;
               const Icon = socialIcons[key as keyof typeof socialIcons];
               return (
-                <a key={key} href={url} target="_blank" className="text-zinc-500 hover:text-emerald-500 transition-all hover:scale-110">
+                <a key={key} onClick={() => onLinkClick?.(key, 'social', url)} href={url} target="_blank" className="text-zinc-500 hover:text-emerald-500 transition-all hover:scale-110">
                   <Icon className="w-6 h-6" />
                 </a>
               );

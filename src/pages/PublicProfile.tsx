@@ -86,24 +86,26 @@ export default function PublicProfile() {
     fetchProfile();
   }, [username]);
 
-  const handleLinkClick = async (linkId: string, url: string) => {
+  const handleLinkClick = async (id: string, type: string, url: string) => {
     if (!profile) return;
-    
-    const linkIndex = profile.links.findIndex(l => l.id === linkId);
-    if (linkIndex === -1) return;
 
     try {
-      if (profile.id) {
-        // New structure
-        await update(ref(rtdb, `accounts/${profile.uid}/cards/${profile.id}/links/${linkIndex}`), {
-          clicks: increment(1)
-        });
-      } else {
-        // Old structure
-        await update(ref(rtdb, `users/${profile.uid}/links/${linkIndex}`), {
-          clicks: increment(1)
-        });
+      const basePath = `accounts/${profile.uid}/cards/${profile.id}`;
+      const updates: { [key: string]: any } = {};
+
+      // Increment the specific link's click count if it's a custom link
+      if (type === 'link') {
+        const linkIndex = profile.links.findIndex(l => l.id === id);
+        if (linkIndex !== -1) {
+          updates[`${basePath}/links/${linkIndex}/clicks`] = increment(1);
+        }
       }
+
+      // Increment the total click count for the given ID in clickHistory
+      updates[`${basePath}/clickHistory/${id}`] = increment(1);
+
+      await update(ref(rtdb), updates);
+
     } catch (err) {
       console.error('Failed to track click', err);
     }
