@@ -443,6 +443,14 @@ export default function Dashboard() {
 
   const { score, checklist } = calculateProfileCompletion();
 
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] p-4 text-center">
+      <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mb-6" />
+      <h2 className="text-xl font-bold mb-2">Loading Your Dashboard</h2>
+      <p className="text-zinc-500">Please wait while we fetch your data...</p>
+    </div>
+  );
+
   if (!activeCard) return (
     <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] p-4 text-center">
       <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6">
