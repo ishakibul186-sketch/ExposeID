@@ -187,6 +187,23 @@ export default function CardView({ profile, onLinkClick }: CardViewProps) {
             </div>
           )}
 
+          {/* YouTube Integration */}
+          {profile.integrations?.youtubeVideoUrl && (
+            <div className="mb-10">
+              <div className="aspect-video rounded-2xl overflow-hidden">
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src={`https://www.youtube.com/embed/${profile.integrations.youtubeVideoUrl.split('v=')[1]}`}
+                  title="YouTube video player" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </div>
+          )}
+
           {/* Portfolio Section */}
           {profile.business?.portfolio && profile.business.portfolio.length > 0 && (
             <div className="mb-10 text-left">
@@ -218,6 +235,39 @@ export default function CardView({ profile, onLinkClick }: CardViewProps) {
                       <p className="text-xs text-zinc-500 line-clamp-1">{project.description}</p>
                     </div>
                   </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Testimonials Section */}
+          {profile.testimonials && profile.testimonials.length > 0 && (
+            <div className="mb-10 text-left">
+              <h2 className="font-bold text-lg px-2 mb-4 flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-emerald-500" /> What People Say
+              </h2>
+              <div className="space-y-4">
+                {profile.testimonials.map((testimonial) => (
+                  <div key={testimonial.id} className={cn(
+                    "p-6 rounded-2xl border",
+                    theme === 'minimal' ? "bg-zinc-100 border-zinc-200" : "bg-zinc-900 border-zinc-800"
+                  )}>
+                    <p className={cn(
+                      "mb-4 text-sm italic",
+                      theme === 'minimal' ? "text-zinc-700" : "text-zinc-300"
+                    )}>"{testimonial.feedback}"</p>
+                    <div className="flex items-center gap-3">
+                      {testimonial.avatar && (
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-800 border-2 border-zinc-700">
+                          <img src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-bold text-sm">{testimonial.name}</p>
+                        {testimonial.company && <p className="text-xs text-zinc-500">{testimonial.company}</p>}
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

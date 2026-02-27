@@ -28,11 +28,15 @@ import {
   PlusCircle,
   AlertTriangle,
   Check,
-  ArrowLeft
+  ArrowLeft,
+  QrCode,
+  Link as LinkIcon,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ImageCropper from '../components/ImageCropper';
 import confetti from 'canvas-confetti';
+import { QRCodeCanvas } from 'qrcode.react';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -44,15 +48,17 @@ export default function Dashboard() {
   const [isOffline, setIsOffline] = useState(false);
   const [view, setView] = useState<'list' | 'edit'>('list');
   const [cardToDelete, setCardToDelete] = useState<UserCard | null>(null);
+  const [justSavedCardId, setJustSavedCardId] = useState<string | null>(null);
   
   // Cropper State
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImage, setCropperImage] = useState<string>('');
-  const [cropperTarget, setCropperTarget] = useState<{ type: 'profile' | 'portfolio' | 'logo' | 'thumbnail', index?: number }>({ type: 'profile' });
+  const [cropperTarget, setCropperTarget] = useState<{ type: 'profile' | 'portfolio' | 'logo' | 'thumbnail' | 'testimonial', index?: number }>({ type: 'profile' });
   const profilePhotoInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const portfolioInputRef = useRef<HTMLInputElement>(null);
+  const testimonialAvatarInputRef = useRef<HTMLInputElement>(null);
 
   const fetchAccount = async () => {
     if (!user) return;
@@ -66,25 +72,27 @@ export default function Dashboard() {
         const data = snapshot.val() as UserAccount;
         setAccount(data);
         
-        // Load active card
-        if (data.activeCardId && data.cards[data.activeCardId]) {
-          const card = data.cards[data.activeCardId];
-          // Ensure links is an array
-          if (card.links && !Array.isArray(card.links)) {
-            card.links = Object.values(card.links);
-          } else if (!card.links) {
-            card.links = [];
+        // Simplified and robust card loading logic
+        const cardCollection = data.cards || {};
+        const cardIds = Object.keys(cardCollection);
+
+        if (cardIds.length > 0) {
+          // To ensure stability, we'll try to load the active card, but fall back to the first card.
+          const cardToLoadId = data.activeCardId && cardCollection[data.activeCardId] 
+            ? data.activeCardId 
+            : cardIds[0];
+          
+          const cardToLoad = cardCollection[cardToLoadId];
+
+          // Ensure links is an array before setting state
+          if (cardToLoad.links && !Array.isArray(cardToLoad.links)) {
+            cardToLoad.links = Object.values(cardToLoad.links);
+          } else if (!cardToLoad.links) {
+            cardToLoad.links = [];
           }
-          setActiveCard(card);
-        } else if (Object.keys(data.cards).length > 0) {
-          const firstCardId = Object.keys(data.cards)[0];
-          const card = data.cards[firstCardId];
-          if (card.links && !Array.isArray(card.links)) {
-            card.links = Object.values(card.links);
-          } else if (!card.links) {
-            card.links = [];
-          }
-          setActiveCard(card);
+          setActiveCard(cardToLoad);
+        } else {
+          setActiveCard(null); // Explicitly set to null if no cards exist
         }
       } else {
         // Migration or new user fallback
@@ -124,6 +132,13 @@ export default function Dashboard() {
     fetchAccount();
   }, [user]);
 
+  useEffect(() => {
+    if (justSavedCardId) {
+      setView('list');
+      setJustSavedCardId(null); // Reset trigger
+    }
+  }, [justSavedCardId]);
+
   const handleRetry = async () => {
     fetchAccount();
   };
@@ -135,7 +150,16 @@ export default function Dashboard() {
     const errors = [];
     if (!activeCard.displayName.trim()) errors.push('Full Name is required.');
     if (!activeCard.username.trim()) errors.push('Username is required.');
-    if (!activeCard.title.trim()) errors.push('Professional Title is required.');
+
+    // If it's a new card, check for username uniqueness
+    if (!activeCard.createdAt) {
+      const usernameSnapshot = await get(ref(rtdb, `usernames/${activeCard.username.toLowerCase()}`));
+      if (usernameSnapshot.exists()) {
+        errors.push('Username is already taken. Please choose another.');
+      }
+    }
+
+    if (!activeCard.title?.trim()) errors.push('Professional Title is required.');
     if (!activeCard.bio.trim()) errors.push('Short Bio is required.');
     if (!activeCard.theme) errors.push('A theme must be selected.');
     const hasSocialLink = Object.values(activeCard.socialLinks || {}).some(link => typeof link === 'string' && link.trim() !== '');
@@ -148,21 +172,36 @@ export default function Dashboard() {
 
     setSaving(true);
     try {
-      const updatedAccount = {
-        ...account,
-        cards: {
-          ...account.cards,
-          [activeCard.id]: activeCard
-        }
-      };
-      await set(ref(rtdb, `accounts/${user.uid}`), updatedAccount);
-      
-      // Update username mapping
-      await set(ref(rtdb, `usernames/${activeCard.username.toLowerCase()}`), { 
-        uid: user.uid, 
-        cardId: activeCard.id 
-      });
+      const cardToSave = { ...activeCard };
+      if (!cardToSave.createdAt) {
+        cardToSave.createdAt = Date.now();
+      }
 
+      const isNewCard = !cardToSave.createdAt;
+      if (isNewCard) {
+        cardToSave.createdAt = Date.now();
+      }
+
+      // Use a multi-path update for atomicity
+      const updates: { [key: string]: any } = {};
+      updates[`/accounts/${user.uid}/cards/${cardToSave.id}`] = cardToSave;
+      updates[`/accounts/${user.uid}/activeCardId`] = cardToSave.id; // Set this card as active
+      updates[`/usernames/${cardToSave.username.toLowerCase()}`] = {
+        uid: user.uid,
+        cardId: cardToSave.id
+      };
+
+      await update(ref(rtdb), updates);
+
+      if (!activeCard.createdAt) { // A more reliable check for a new card
+        // For new cards, a full reload is the most reliable way to ensure all state is fresh
+        window.location.reload();
+      } else {
+        // For existing cards, a soft refresh is fine
+        await fetchAccount();
+        setMessage('Changes saved successfully!');
+      }
+      
       setMessage('Changes saved successfully!');
       confetti({
         particleCount: 100,
@@ -190,13 +229,11 @@ export default function Dashboard() {
     }
 
     const cardId = Math.random().toString(36).substr(2, 9);
-    const defaultUsername = `${user.email?.split('@')[0]}${cardCount + 1}`.replace(/[^a-z0-9]/g, '');
-    
     const newCard: UserCard = {
       id: cardId,
       uid: user.uid,
-      username: defaultUsername,
-      displayName: user.displayName || 'New Card',
+      username: '',
+      displayName: 'New Card',
       bio: 'Welcome to my digital card!',
       photoURL: '',
       theme: 'classic',
@@ -205,32 +242,23 @@ export default function Dashboard() {
       contact: { mobile: '', whatsapp: '', email: user.email || '', website: '', address: '' },
       business: { companyName: '', companyLogo: '', services: [], experience: 0, skills: [], portfolio: [] },
       views: 0,
-      createdAt: Date.now()
+      createdAt: 0
     };
 
-    const updatedAccount: UserAccount = account ? {
-      ...account,
-      cards: { ...account.cards, [cardId]: newCard },
-      activeCardId: cardId
-    } : {
-      uid: user.uid,
-      email: user.email || '',
-      cards: { [cardId]: newCard },
-      activeCardId: cardId
-    };
-
-    try {
-      await set(ref(rtdb, `accounts/${user.uid}`), updatedAccount);
-      await set(ref(rtdb, `usernames/${defaultUsername.toLowerCase()}`), { uid: user.uid, cardId });
-      
-      setAccount(updatedAccount);
-      setActiveCard(newCard);
-      setMessage('New card created!');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      console.error("Error creating card:", err);
-      setMessage('Failed to create card.');
-    }
+    // Use functional update to ensure we're working with the latest state
+    setAccount(prevAccount => {
+      const baseAccount = prevAccount || { uid: user.uid, email: user.email || '', cards: {} };
+      return {
+        ...baseAccount,
+        cards: {
+          ...(baseAccount.cards || {}),
+          [cardId]: newCard
+        },
+        activeCardId: cardId
+      };
+    });
+    setActiveCard(newCard);
+    setView('edit');
   };
 
   const switchCard = (cardId: string) => {
@@ -267,6 +295,14 @@ export default function Dashboard() {
     });
   };
 
+  const updateIntegration = (key: keyof NonNullable<UserCard['integrations']>, value: string) => {
+    if (!activeCard) return;
+    setActiveCard({
+      ...activeCard,
+      integrations: { ...(activeCard.integrations || {}), [key]: value }
+    });
+  };
+
   const addLink = () => {
     if (!activeCard) return;
     const newLink: LinkItem = {
@@ -291,7 +327,7 @@ export default function Dashboard() {
   };
 
   // Image Cropping Logic
-  const onFileChange = (e: ChangeEvent<HTMLInputElement>, target: 'profile' | 'portfolio' | 'logo' | 'thumbnail', index?: number) => {
+  const onFileChange = (e: ChangeEvent<HTMLInputElement>, target: 'profile' | 'portfolio' | 'logo' | 'thumbnail' | 'testimonial', index?: number) => {
     if (e.target.files && e.target.files.length > 0) {
       const reader = new FileReader();
       reader.addEventListener('load', () => {
@@ -319,6 +355,10 @@ export default function Dashboard() {
       const newPortfolio = [...(activeCard.business?.portfolio || [])];
       newPortfolio[cropperTarget.index].imageUrl = croppedImage;
       updateBusiness('portfolio', newPortfolio);
+    } else if (cropperTarget.type === 'testimonial' && cropperTarget.index !== undefined) {
+      const newTestimonials = [...(activeCard.testimonials || [])];
+      newTestimonials[cropperTarget.index].avatar = croppedImage;
+      setActiveCard({ ...activeCard, testimonials: newTestimonials });
     }
     
     setCropperOpen(false);
@@ -386,6 +426,21 @@ export default function Dashboard() {
     return { score, checklist };
   };
 
+  const downloadQRCode = () => {
+    const canvas = document.getElementById('qr-code-canvas') as HTMLCanvasElement;
+    if (canvas) {
+      const pngUrl = canvas
+        .toDataURL('image/png')
+        .replace('image/png', 'image/octet-stream');
+      let downloadLink = document.createElement('a');
+      downloadLink.href = pngUrl;
+      downloadLink.download = `${activeCard?.username}-qrcode.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+  };
+
   const { score, checklist } = calculateProfileCompletion();
 
   if (!activeCard) return (
@@ -445,7 +500,7 @@ export default function Dashboard() {
 
       {view === 'list' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {account && (Object.values(account.cards) as UserCard[]).map(card => (
+          {account && account.cards && (Object.values(account.cards) as UserCard[]).map(card => (
             <div key={card.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-col group">
               <div className="flex-1 mb-4">
                 <div className="w-full aspect-video bg-zinc-800 rounded-lg mb-3 overflow-hidden">
@@ -852,6 +907,115 @@ export default function Dashboard() {
           </section>
 
           <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <LinkIcon className="w-5 h-5 text-emerald-500" /> Integrations
+            </h2>
+            <div>
+              <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5">YouTube Video URL</label>
+              <input 
+                type="url"
+                value={activeCard.integrations?.youtubeVideoUrl || ''}
+                onChange={(e) => updateIntegration('youtubeVideoUrl', e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 px-4 focus:ring-2 focus:ring-emerald-500 outline-none"
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+            </div>
+          </section>
+
+          <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-emerald-500" /> Testimonials
+            </h2>
+            <div className="space-y-4">
+              {activeCard.testimonials?.map((testimonial, index) => (
+                <div key={testimonial.id || index} className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 flex gap-4 items-start">
+                  <div className="relative group shrink-0">
+                    <div className="w-16 h-16 bg-zinc-800 rounded-full overflow-hidden border-2 border-zinc-800">
+                      {testimonial.avatar ? (
+                        <img src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-500">
+                          <ImageIcon className="w-8 h-8" />
+                        </div>
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setCropperTarget({ type: 'testimonial', index });
+                        testimonialAvatarInputRef.current?.click();
+                      }}
+                      className="absolute -bottom-1 -right-1 p-2 bg-emerald-500 text-zinc-950 rounded-full shadow-lg hover:scale-110 transition-transform"
+                    >
+                      <Camera className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="flex-1">
+                    <input 
+                      type="text"
+                      value={testimonial.name}
+                      onChange={(e) => {
+                        const newTestimonials = [...(activeCard.testimonials || [])];
+                        newTestimonials[index].name = e.target.value;
+                        setActiveCard({ ...activeCard, testimonials: newTestimonials });
+                      }}
+                      className="w-full bg-transparent font-bold mb-1 focus:ring-0 border-none p-0"
+                      placeholder="Client Name"
+                    />
+                    <input 
+                      type="text"
+                      value={testimonial.company || ''}
+                      onChange={(e) => {
+                        const newTestimonials = [...(activeCard.testimonials || [])];
+                        newTestimonials[index].company = e.target.value;
+                        setActiveCard({ ...activeCard, testimonials: newTestimonials });
+                      }}
+                      className="w-full bg-transparent text-xs text-zinc-500 mb-2 focus:ring-0 border-none p-0"
+                      placeholder="Company (optional)"
+                    />
+                    <textarea 
+                      value={testimonial.feedback}
+                      onChange={(e) => {
+                        const newTestimonials = [...(activeCard.testimonials || [])];
+                        newTestimonials[index].feedback = e.target.value;
+                        setActiveCard({ ...activeCard, testimonials: newTestimonials });
+                      }}
+                      className="w-full bg-zinc-900 border border-zinc-700 rounded-lg py-2 px-3 text-sm h-24 resize-none focus:ring-2 focus:ring-emerald-500 outline-none"
+                      placeholder="Client feedback..."
+                    />
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const newTestimonials = [...(activeCard.testimonials || [])];
+                      newTestimonials.splice(index, 1);
+                      setActiveCard({ ...activeCard, testimonials: newTestimonials });
+                    }}
+                    className="p-2 text-zinc-600 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button 
+                onClick={() => {
+                  const newTestimonials = [...(activeCard.testimonials || [])];
+                  newTestimonials.push({ id: Math.random().toString(36).substr(2, 9), name: '', feedback: '' });
+                  setActiveCard({ ...activeCard, testimonials: newTestimonials });
+                }}
+                className="w-full py-4 border-2 border-dashed border-zinc-800 rounded-xl text-zinc-500 hover:border-emerald-500 hover:text-emerald-500 transition-all flex items-center justify-center gap-2 font-bold"
+              >
+                <Plus className="w-4 h-4" /> Add Testimonial
+              </button>
+            </div>
+            <input 
+              type="file"
+              ref={testimonialAvatarInputRef}
+              onChange={(e) => onFileChange(e, 'testimonial', activeCard.testimonials?.length || 0)}
+              className="hidden"
+              accept="image/*"
+            />
+          </section>
+
+          <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Palette className="w-5 h-5 text-emerald-500" /> Themes
@@ -990,6 +1154,29 @@ export default function Dashboard() {
                   }
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-emerald-500" /> Share QR Code
+            </h2>
+            <div className="flex flex-col items-center">
+              <div className="p-4 bg-white rounded-lg">
+                <QRCodeCanvas
+                  id="qr-code-canvas"
+                  value={`${window.location.origin}/${activeCard.username}`}
+                  size={160}
+                  level={"H"}
+                  includeMargin={true}
+                />
+              </div>
+              <button 
+                onClick={downloadQRCode}
+                className="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+              >
+                Download PNG
+              </button>
             </div>
           </section>
 

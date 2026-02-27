@@ -1,15 +1,9 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { Shield, User, Bell } from 'lucide-react';
+import { User, Bell } from 'lucide-react';
 
 const Settings = () => {
   const settingsOptions = [
-    {
-      name: 'Account Security',
-      description: 'Manage your password and two-factor authentication.',
-      link: '/settings/account-security',
-      icon: <Shield className="w-6 h-6 text-emerald-400" />
-    },
     {
       name: 'Profile Information',
       description: 'Update your personal details and profile picture.',

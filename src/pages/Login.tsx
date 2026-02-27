@@ -4,16 +4,12 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
-  GoogleAuthProvider, 
-  getMultiFactorResolver,
-  PhoneAuthProvider,
-  RecaptchaVerifier,
-  sendEmailVerification
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { auth, rtdb } from '../firebase';
 import { ref, set, get, child } from 'firebase/database';
 import { motion } from 'motion/react';
-import { Smartphone, Mail, Lock, Chrome, Loader2 } from 'lucide-react';
+import { Mail, Lock, Chrome, Loader2, User as UserIcon } from 'lucide-react';
 import { UserAccount, UserCard } from '../types';
 
 export default function Login() {
@@ -21,14 +17,8 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [name, setName] = useState('');
-  const [country, setCountry] = useState('');
-  const [age, setAge] = useState('');
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
   
   const navigate = useNavigate();
 
@@ -39,7 +29,6 @@ export default function Login() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // Check if account exists
       const dbRef = ref(rtdb);
       const snapshot = await get(child(dbRef, `accounts/${user.uid}`));
       
@@ -88,71 +77,34 @@ export default function Login() {
     
     try {
       if (isLogin) {
-        try {
-          await signInWithEmailAndPassword(auth, email, password);
-          navigate('/dashboard');
-        } catch (err: any) {
-          if (err.code === 'auth/multi-factor-auth-required') {
-            const resolver = getMultiFactorResolver(auth, err);
-            const phoneInfo = resolver.hints.find(info => info.factorId === 'phone');
-            if (phoneInfo) {
-              // @ts-ignore
-              window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-              });
-              const phoneAuthProvider = new PhoneAuthProvider(auth);
-              const verificationId = await phoneAuthProvider.verifyPhoneNumber({
-                multiFactorHint: phoneInfo,
-                session: resolver.session
-              // @ts-ignore
-              }, window.recaptchaVerifier);
-              navigate('/verify-mfa', { state: { resolver, verificationId } });
-            } else {
-              setError('No supported 2FA method found.');
-            }
-          } else {
-            setError(err.message);
-          }
-        }
-      } else { // Sign up logic
-        if (step === 1) {
-          if (!name || !country || !age) {
-            setError('Please fill in all personal details.');
-            setLoading(false);
-            return;
-          }
-          setStep(2);
-          setLoading(false);
-          return;
-        }
-
+        await signInWithEmailAndPassword(auth, email, password);
+        navigate('/dashboard');
+      } else {
         if (password !== confirmPassword) {
           throw new Error('Passwords do not match');
-        }
-
-        if (!username) throw new Error('Username is required');
-        const cleanUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '');
-        
-        const usernameSnapshot = await get(ref(rtdb, `usernames/${cleanUsername}`));
-        if (usernameSnapshot.exists()) {
-          throw new Error('Username is already taken');
         }
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        await sendEmailVerification(user, { 
-          url: `${window.location.origin}/login?verified=true`,
-          handleCodeInApp: true,
-        });
+        const defaultUsername = email.split('@')[0].replace(/[^a-z0-9]/g, '') + Math.random().toString(36).substr(2, 4);
+
+        const usernameSnapshot = await get(ref(rtdb, `usernames/${defaultUsername}`));
+        if (usernameSnapshot.exists()) {
+          // Handle rare case of username collision
+          const newUsername = defaultUsername + Math.random().toString(36).substr(2, 4);
+          await set(ref(rtdb, `usernames/${newUsername}`), { uid: user.uid, cardId });
+        } else {
+          await set(ref(rtdb, `usernames/${defaultUsername}`), { uid: user.uid, cardId });
+        }
 
         const cardId = Math.random().toString(36).substr(2, 9);
         
         const firstCard: UserCard = {
           id: cardId,
           uid: user.uid,
-          username: cleanUsername,
-          displayName: name,
+          username: defaultUsername,
+          displayName: email.split('@')[0],
           bio: 'Welcome to my digital card!',
           photoURL: '',
           theme: 'classic',
@@ -168,16 +120,12 @@ export default function Login() {
           uid: user.uid,
           email: email,
           cards: { [cardId]: firstCard },
-          activeCardId: cardId,
-          personalInfo: { name, country, age }
+          activeCardId: cardId
         };
 
         await set(ref(rtdb, `accounts/${user.uid}`), account);
-        await set(ref(rtdb, `usernames/${cleanUsername}`), { uid: user.uid, cardId });
         
-        setInfo('Verification email sent! Please check your inbox to verify your account before logging in.');
-        setIsLogin(true);
-        setStep(1);
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.message);
@@ -210,78 +158,51 @@ export default function Login() {
             {error}
           </div>
         )}
-        {info && (
-          <div className="mb-6 p-3 bg-emerald-500/10 border border-emerald-500/50 text-emerald-500 text-sm rounded-lg">
-            {info}
-          </div>
-        )}
 
         <form onSubmit={handleAuth} className="space-y-4">
-          {isLogin ? (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                  <input 
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1.5">Email Address</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <input 
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <input 
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+          </div>
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1.5">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input 
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                  placeholder="••••••••"
+                  required
+                />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                  <input 
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-              </div>
-            </>
-          ) : step === 1 ? (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Full Name</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 px-4" placeholder="John Doe" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Country</label>
-                <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 px-4" placeholder="United States" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Age</label>
-                <input type="number" value={age} onChange={(e) => setAge(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 px-4" placeholder="25" required />
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Username</label>
-                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 px-4" placeholder="johndoe" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Email Address</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 px-4" placeholder="you@example.com" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 px-4" placeholder="••••••••" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Confirm Password</label>
-                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2.5 px-4" placeholder="••••••••" required />
-              </div>
-            </>
+            </div>
           )}
 
           <button 
@@ -289,7 +210,7 @@ export default function Login() {
             disabled={loading}
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Sign In' : (step === 1 ? 'Next' : 'Sign Up'))}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Sign In' : 'Sign Up')}
           </button>
         </form>
 
@@ -319,7 +240,6 @@ export default function Login() {
             {isLogin ? 'Sign Up' : 'Sign In'}
           </button>
         </p>
-        <div id="recaptcha-container"></div>
       </motion.div>
     </div>
   );

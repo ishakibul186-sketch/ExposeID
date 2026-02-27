@@ -54,6 +54,8 @@ export interface UserCard {
   socialLinks: SocialLinks;
   contact: ContactInfo;
   business?: BusinessInfo;
+  integrations?: Integrations;
+  testimonials?: Testimonial[];
   views: number;
   createdAt: number;
   isTopRanked?: boolean;
@@ -73,3 +75,30 @@ export interface AnalyticsData {
 }
 
 export type ThemeType = 'classic' | 'modern' | 'glass' | 'neon' | 'minimal';
+
+export interface TeamMember {
+  uid: string;
+  email: string;
+  role: 'owner' | 'admin' | 'member';
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  ownerId: string;
+  members: Record<string, TeamMember>;
+  createdAt: number;
+}
+
+export interface Integrations {
+  youtubeVideoUrl?: string;
+}
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  feedback: string;
+  company?: string;
+  avatar?: string; // Base64
+}
+

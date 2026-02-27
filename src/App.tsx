@@ -17,10 +17,7 @@ import Analytics from './pages/Analytics';
 import SearchResult from './pages/SearchResult';
 import NotFound from './pages/NotFound';
 import Settings from './setting/Settings';
-import AccountSecurity from './setting/AccountSecurity';
-import VerifyMFA from './pages/VerifyMFA';
-
-// Components
+import Teams from './pages/Teams';
 import Navbar from './components/Navbar';
 import GoToTop from './components/GoToTop';
 
@@ -70,14 +67,13 @@ export default function App() {
               element={user ? <><Navbar /><Analytics /></> : <Navigate to="/login" />} 
             />
             <Route path="/searchresult" element={<SearchResult />} />
-            <Route path="/verify-mfa" element={<VerifyMFA />} />
             <Route 
               path="/settings" 
               element={user ? <Settings /> : <Navigate to="/login" />} 
             />
             <Route 
-              path="/settings/account-security"
-              element={user ? <AccountSecurity /> : <Navigate to="/login" />}
+              path="/teams" 
+              element={user ? <><Navbar /><Teams /></> : <Navigate to="/login" />} 
             />
             <Route path="/:username" element={<PublicProfile />} />
             <Route path="*" element={<NotFound />} />

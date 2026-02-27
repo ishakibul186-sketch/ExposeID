@@ -37,16 +37,26 @@ export default function Analytics() {
         const data = snapshot.val() as UserAccount;
         setAccount(data);
         
-        const cardId = data.activeCardId || Object.keys(data.cards)[0];
-        const card = data.cards[cardId];
-        
-        // Ensure links is an array
-        if (card.links && !Array.isArray(card.links)) {
-          card.links = Object.values(card.links);
-        } else if (!card.links) {
-          card.links = [];
+        // Simplified and robust card loading logic
+        const cardCollection = data.cards || {};
+        const cardIds = Object.keys(cardCollection);
+
+        if (cardIds.length > 0) {
+          const cardToLoadId = data.activeCardId && cardCollection[data.activeCardId] 
+            ? data.activeCardId 
+            : cardIds[0];
+          
+          const cardToLoad = cardCollection[cardToLoadId];
+
+          if (cardToLoad.links && !Array.isArray(cardToLoad.links)) {
+            cardToLoad.links = Object.values(cardToLoad.links);
+          } else if (!cardToLoad.links) {
+            cardToLoad.links = [];
+          }
+          setActiveCard(cardToLoad);
+        } else {
+          setActiveCard(null); // No cards found
         }
-        setActiveCard(card);
       } else {
         // Fallback to legacy
         const legacySnapshot = await get(child(dbRef, `users/${user.uid}`));

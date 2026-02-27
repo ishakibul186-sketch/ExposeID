@@ -1,171 +1,180 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowRight, 
-  Smartphone, 
-  BarChart2, 
-  Palette, 
-  Globe, 
-  Search, 
-  Loader2
-} from 'lucide-react';
-import { rtdb } from '../firebase';
-import { ref, get } from 'firebase/database';
-import { UserCard, UserAccount } from '../types';
-import { SearchEngine } from '../lib/searchengine';
+import { Check, ChevronRight, Star, Linkedin, Twitter, Instagram } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
-  const navigate = useNavigate();
-  const [query, setQuery] = useState('');
-  const [searchEngine, setSearchEngine] = useState<SearchEngine | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchAllCards = async () => {
-      try {
-        const snapshot = await get(ref(rtdb, 'accounts'));
-        if (snapshot.exists()) {
-          const accounts = snapshot.val() as Record<string, UserAccount>;
-          const allCards: UserCard[] = [];
-          Object.values(accounts).forEach(account => {
-            if (account.cards) {
-              Object.values(account.cards).forEach(card => {
-                allCards.push(card);
-              });
-            }
-          });
-          setSearchEngine(new SearchEngine(allCards));
-        }
-      } catch (err) {
-        console.error('Failed to initialize search engine', err);
-      }
-    };
-    fetchAllCards();
-  }, []);
-
-  const handleSearchChange = (val: string) => {
-    setQuery(val);
-    if (searchEngine) {
-      setSuggestions(searchEngine.getSuggestions(val));
-    }
-  };
-
-  const onSearchSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      navigate(`/searchresult?q=${encodeURIComponent(query.trim())}`);
-    }
-  };
-
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950">
+    <div className="bg-zinc-950 text-white">
       {/* Hero Section */}
-      <section className="relative flex-1 flex items-center justify-center py-20 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-[128px]"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-[128px]"></div>
-        </div>
-
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent">
-              Your Digital Presence,<br />Simplified.
-            </h1>
-            <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-10">
-              The only link you'll ever need. Create a beautiful, professional digital card in minutes and track your growth with real-time analytics.
-            </p>
-            
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-12 relative group">
-              <form onSubmit={onSearchSubmit} className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
-                <input 
-                  type="text"
-                  value={query}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder="Search by name, title, skills or company..."
-                  className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-lg"
-                />
-              </form>
-              
-              {/* Suggestions */}
-              <AnimatePresence>
-                {suggestions.length > 0 && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden z-50 shadow-2xl"
-                  >
-                    {suggestions.map((s, i) => (
-                      <button 
-                        key={i}
-                        onClick={() => {
-                          setQuery(s);
-                          navigate(`/searchresult?q=${encodeURIComponent(s)}`);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-zinc-800 transition-colors text-zinc-300 flex items-center gap-3"
-                      >
-                        <Search className="w-4 h-4 text-zinc-500" />
-                        {s}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                to="/login"
-                className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-zinc-950 px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-105"
-              >
-                Create Your Card <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-          </motion.div>
+      <section className="py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
+            Your Digital Identity, Redefined.
+          </h1>
+          <p className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-3xl mx-auto">
+            Create a stunning, interactive digital business card in minutes. Share your brand, connect with your audience, and grow your network like never before.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/login" className="bg-emerald-500 text-zinc-950 font-bold px-8 py-3 rounded-full hover:bg-emerald-400 transition-colors duration-300">
+              Get Started for Free
+            </Link>
+            <Link to="#features" className="flex items-center gap-2 font-bold px-8 py-3 rounded-full hover:bg-zinc-800 transition-colors duration-300">
+              Learn More <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-24 bg-zinc-900/30">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { icon: Smartphone, title: "Mobile Optimized", desc: "Your card looks stunning on every device, from mobile to desktop." },
-              { icon: BarChart2, title: "Real-time Analytics", desc: "Track views and clicks to understand your audience better." },
-              { icon: Palette, title: "Custom Themes", desc: "Express your brand with custom colors, fonts, and styles." },
-              { icon: Globe, title: "SEO Friendly", desc: "Optimized for search engines to help people find you easily." }
-            ].map((feature, i) => (
-              <div key={i} className="p-8 rounded-2xl border border-zinc-800 bg-zinc-950 hover:border-emerald-500/50 transition-all group">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-emerald-500" />
+      {/* Animated Preview Section */}
+      <section className="py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Bring Your Brand to Life</h2>
+            <p className="mt-4 text-lg text-zinc-400 max-w-2xl mx-auto">Create a lasting impression with a dynamic, animated digital card.</p>
+          </div>
+          <div className="mt-16 relative h-96">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-72 h-48 bg-zinc-800 rounded-2xl shadow-2xl transform -rotate-6 transition-transform duration-500 hover:rotate-0">
+                <div className="p-4">
+                  <h3 className="font-bold text-lg">John Doe</h3>
+                  <p className="text-sm text-zinc-400">Web Developer</p>
                 </div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-zinc-400 leading-relaxed">{feature.desc}</p>
               </div>
-            ))}
+              <div className="w-72 h-48 bg-emerald-500 rounded-2xl shadow-2xl transform rotate-6 transition-transform duration-500 hover:rotate-0">
+                <div className="p-4">
+                  <h3 className="font-bold text-lg text-zinc-950">Jane Smith</h3>
+                  <p className="text-sm text-zinc-900">Freelancer</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20 sm:py-32 bg-zinc-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Powerful Features, Seamless Experience</h2>
+            <p className="mt-4 text-lg text-zinc-400 max-w-2xl mx-auto">Everything you need to create a professional and engaging digital identity.</p>
+          </div>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-zinc-800 p-8 rounded-2xl">
+              <Check className="w-8 h-8 text-emerald-500" />
+              <h3 className="mt-4 text-xl font-bold">Advanced Customization</h3>
+              <p className="mt-2 text-zinc-400">Go beyond templates with custom fonts, colors, and layouts to perfectly match your brand.</p>
+            </div>
+            <div className="bg-zinc-800 p-8 rounded-2xl">
+              <Check className="w-8 h-8 text-emerald-500" />
+              <h3 className="mt-4 text-xl font-bold">Lead Generation</h3>
+              <p className="mt-2 text-zinc-400">Capture leads directly from your digital card with a built-in contact form.</p>
+            </div>
+            <div className="bg-zinc-800 p-8 rounded-2xl">
+              <Check className="w-8 h-8 text-emerald-500" />
+              <h3 className="mt-4 text-xl font-bold">Team Management</h3>
+              <p className="mt-2 text-zinc-400">Create and manage digital cards for your entire team with ease.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Create Your Card in 3 Simple Steps</h2>
+          </div>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <h3 className="text-2xl font-bold">1. Sign Up</h3>
+              <p className="mt-2 text-zinc-400">Create your account in seconds.</p>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold">2. Customize</h3>
+              <p className="mt-2 text-zinc-400">Personalize your card with your branding and content.</p>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold">3. Share</h3>
+              <p className="mt-2 text-zinc-400">Share your card with anyone, anywhere.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 sm:py-32 bg-zinc-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Loved by Professionals Worldwide</h2>
+          </div>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-zinc-800 p-8 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+              </div>
+              <p className="mt-4 text-zinc-400">"The best digital business card I've ever used. It's a game-changer for my networking."</p>
+              <p className="mt-4 font-bold">- John Doe, CEO at Company</p>
+            </div>
+            <div className="bg-zinc-800 p-8 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+              </div>
+              <p className="mt-4 text-zinc-400">"I love how easy it is to create and share my card. The analytics are a huge plus!"</p>
+              <p className="mt-4 font-bold">- Jane Smith, Freelancer</p>
+            </div>
+            <div className="bg-zinc-800 p-8 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+                <Star className="w-5 h-5 text-emerald-500" />
+              </div>
+              <p className="mt-4 text-zinc-400">"A must-have tool for any professional looking to make a great first impression."</p>
+              <p className="mt-4 font-bold">- Samuel Lee, Consultant</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Frequently Asked Questions</h2>
+          </div>
+          <div className="mt-16 max-w-3xl mx-auto">
+            <div className="bg-zinc-900 p-6 rounded-2xl">
+              <h3 className="font-bold">Is it free to get started?</h3>
+              <p className="mt-2 text-zinc-400">Yes, you can create a free digital business card with all the essential features. We also offer premium plans for advanced users.</p>
+            </div>
+            <div className="mt-4 bg-zinc-900 p-6 rounded-2xl">
+              <h3 className="font-bold">Can I customize my card?</h3>
+              <p className="mt-2 text-zinc-400">Absolutely! You can choose from a variety of templates, colors, and fonts to create a card that perfectly represents your brand.</p>
+            </div>
+            <div className="mt-4 bg-zinc-900 p-6 rounded-2xl">
+              <h3 className="font-bold">How do I share my card?</h3>
+              <p className="mt-2 text-zinc-400">You can share your card via a unique URL, QR code, email, or social media. It's easy to share with anyone, anywhere.</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-zinc-800 mt-auto">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <img src="/assets/logo.png" alt="ExposeID" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-lg tracking-tight">ExposeID</span>
-          </div>
-          <p className="text-zinc-500 text-sm">© 2026 ExposeID. All rights reserved.</p>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-zinc-400 text-sm">
-            <a href="/docs" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Docs</a>
-            <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Terms of Service</a>
+      <footer className="py-10 bg-zinc-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between">
+          <p className="text-zinc-400">&copy; 2026 ExposeID. All rights reserved.</p>
+          <div className="flex items-center gap-6 mt-4 sm:mt-0">
+            <Link to="/docs" className="text-zinc-400 hover:text-white transition-colors duration-300">Docs</Link>
+            <Link to="/privacy" className="text-zinc-400 hover:text-white transition-colors duration-300">Privacy Policy</Link>
+            <Link to="/terms" className="text-zinc-400 hover:text-white transition-colors duration-300">Terms</Link>
           </div>
         </div>
       </footer>
