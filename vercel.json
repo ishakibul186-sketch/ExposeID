@@ -2,23 +2,23 @@
   "rewrites": [
     {
       "source": "/sitemap.xml",
-      "destination": "/index.html"
+      "destination": "/sitemap.xml"
     },
     {
       "source": "/sitemap-userprofile.xml",
-      "destination": "/index.html"
+      "destination": "/sitemap-userprofile.xml"
     },
     {
       "source": "/docs",
-      "destination": "/index.html"
+      "destination": "/docs.html"
     },
     {
       "source": "/terms",
-      "destination": "/index.html"
+      "destination": "/terms.html"
     },
     {
       "source": "/privacy-policy",
-      "destination": "/index.html"
+      "destination": "/privacy-policy.html"
     },
     {
       "source": "/(.*)",
