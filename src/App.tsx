@@ -20,6 +20,10 @@ import Settings from './setting/Settings';
 import Teams from './pages/Teams';
 import Navbar from './components/Navbar';
 import GoToTop from './components/GoToTop';
+import Docs from './docs.html';
+import Terms from './terms.html';
+import Privacy from './privacy-policy.html';
+import About from './about.html';
 
 interface AuthContextType {
   user: User | null;
@@ -76,6 +80,10 @@ export default function App() {
               element={user ? <><Navbar /><Teams /></> : <Navigate to="/login" />} 
             />
             <Route path="/:username" element={<PublicProfile />} />
+            <Route path="/docs" element={<Docs />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <GoToTop />
