@@ -20,10 +20,10 @@ import Settings from './setting/Settings';
 import Teams from './pages/Teams';
 import Navbar from './components/Navbar';
 import GoToTop from './components/GoToTop';
-import Docs from './docs.html';
-import Terms from './terms.html';
-import Privacy from './privacy-policy.html';
-import About from './about.html';
+import Docs from './docs.';
+import Terms from './terms';
+import Privacy from './privacy-policy';
+import About from './about';
 
 interface AuthContextType {
   user: User | null;
