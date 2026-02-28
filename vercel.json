@@ -1,5 +1,4 @@
 {
-  "version": 3,
   "rewrites": [
     {
       "source": "/sitemap.xml",
