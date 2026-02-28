@@ -172,10 +172,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between">
           <p className="text-zinc-400">&copy; 2026 ExposeID. All rights reserved.</p>
           <div className="flex items-center gap-6 mt-4 sm:mt-0">
-            <Link to="/docs" className="text-zinc-400 hover:text-white transition-colors duration-300">Docs</Link>
-            <Link to="/privacy" className="text-zinc-400 hover:text-white transition-colors duration-300">Privacy Policy</Link>
-            <Link to="/terms" className="text-zinc-400 hover:text-white transition-colors duration-300">Terms</Link>
-            <Link to="/about" className="text-zinc-400 hover:text-white transition-colors duration-300">Abput</Link>
+            <a href="/docs">Docs</a>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/about">About</a>
           </div>
         </div>
       </footer>
