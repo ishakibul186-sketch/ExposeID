@@ -175,7 +175,7 @@ export default function LandingPage() {
             <Link to="/docs" className="text-zinc-400 hover:text-white transition-colors duration-300">Docs</Link>
             <Link to="/privacy" className="text-zinc-400 hover:text-white transition-colors duration-300">Privacy Policy</Link>
             <Link to="/terms" className="text-zinc-400 hover:text-white transition-colors duration-300">Terms</Link>
-            <a href="/about.html" className="text-zinc-400 hover:text-white transition-colors duration-300">About</a>
+            <Link to="/about" className="text-zinc-400 hover:text-white transition-colors duration-300">Abput</Link>
           </div>
         </div>
       </footer>
