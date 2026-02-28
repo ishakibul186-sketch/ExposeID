@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/sitemap.xml","destination": "/sitemap.xml",
+      "source": "/sitemap-userprofile.xml","destination": "/sitemap-userprofile.xml"
+      "source": "/docs","destination": "/docs.html",
+      "source": "/terms","destination": "/terms.html",
+      "source": "/privacy-policy","destination": "/privacy-policy.html",
+      "source": "/(.*)", "destination": "/index.html"
     }
   ]
 }
